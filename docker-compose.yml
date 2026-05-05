@@ -1,0 +1,57 @@
+name: aarhus-space-program
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: AarhusSpaceProgram.Api/Dockerfile
+    ports:
+      - "${API_HTTP_PORT:-8080}:8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: "${ASPNETCORE_ENVIRONMENT:-Development}"
+      ASPNETCORE_HTTP_PORTS: "8080"
+      ConnectionStrings__DefaultConnection: "Server=sqlserver,1433;Database=${SQLSERVER_DATABASE:-AarhusSpaceProgramDb};User Id=sa;Password=${MSSQL_SA_PASSWORD:?Set MSSQL_SA_PASSWORD in .env};TrustServerCertificate=True;Encrypt=False"
+      Serilog__MongoDbUrl: "mongodb://mongodb:27017/${SERILOG_MONGODB_DATABASE:-AarhusSpaceProgramLogs}"
+      Serilog__MongoDbCollection: "${SERILOG_MONGODB_COLLECTION:-request_logs}"
+      MongoDb__ConnectionString: "mongodb://mongodb:27017"
+      MongoDb__DatabaseName: "${MONGODB_DATABASE:-MissionLogsDb}"
+      MongoDb__CollectionName: "${MONGODB_COLLECTION:-MissionLogs}"
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+      mongodb:
+        condition: service_healthy
+
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_PID: "Developer"
+      MSSQL_SA_PASSWORD: "${MSSQL_SA_PASSWORD:?Set MSSQL_SA_PASSWORD in .env}"
+    ports:
+      - "${SQLSERVER_PORT:-1433}:1433"
+    volumes:
+      - sqlserver-data:/var/opt/mssql
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c '</dev/tcp/localhost/1433'"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 20s
+
+  mongodb:
+    image: mongo:7.0
+    ports:
+      - "${MONGODB_PORT:-27017}:27017"
+    volumes:
+      - mongodb-data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 10s
+
+volumes:
+  sqlserver-data:
+  mongodb-data:
