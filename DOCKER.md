@@ -14,9 +14,16 @@ docker compose up --build
 
 The API is available at `http://localhost:8080` by default.
 
+The container startup seeds three roles and, when the matching `.env` values are present, one development user per role:
+
+- `astronaut@asp.local`
+- `scientist@asp.local`
+- `manager@asp.local`
+
 Useful endpoints:
 
 - `GET /health`
+- `POST /api/auth/login`
 - `GET /openapi/v1.json`
 - Scalar API reference at `/scalar/v1`
 
@@ -33,6 +40,19 @@ Secrets and machine-specific connection strings should stay out of committed `ap
 For Docker, `docker-compose.yml` injects configuration through environment variables:
 
 - `ConnectionStrings__DefaultConnection`
+- `Jwt__Issuer`
+- `Jwt__Audience`
+- `Jwt__AccessTokenMinutes`
+- `Jwt__Key`
+- `SeedUsers__Astronaut__UserName`
+- `SeedUsers__Astronaut__Password`
+- `SeedUsers__Astronaut__StaffFullName`
+- `SeedUsers__Scientist__UserName`
+- `SeedUsers__Scientist__Password`
+- `SeedUsers__Scientist__StaffFullName`
+- `SeedUsers__Manager__UserName`
+- `SeedUsers__Manager__Password`
+- `SeedUsers__Manager__StaffFullName`
 - `Serilog__MongoDbUrl`
 - `Serilog__MongoDbCollection`
 - `MongoDb__ConnectionString`
@@ -43,6 +63,7 @@ For non-Docker local development, prefer user secrets or environment variables. 
 
 ```powershell
 dotnet user-secrets set "ConnectionStrings:DefaultConnection" "Server=localhost,1433;Database=AarhusSpaceProgramDb;User Id=sa;Password=your-local-password;TrustServerCertificate=True;Encrypt=False" --project AarhusSpaceProgram.Api
+dotnet user-secrets set "Jwt:Key" "your-at-least-32-byte-local-dev-secret" --project AarhusSpaceProgram.Api
 dotnet user-secrets set "Serilog:MongoDbUrl" "mongodb://localhost:27017/AarhusSpaceProgramLogs" --project AarhusSpaceProgram.Api
 ```
 

@@ -1,3 +1,5 @@
+using AarhusSpaceProgram.Api.Security;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MongoDB.Bson;
 using MongoDB.Driver;
@@ -5,6 +7,7 @@ using MongoDB.Driver;
 namespace AarhusSpaceProgram.Api.Controllers;
 
 [ApiController]
+[Authorize(Policy = AuthorizationPolicyNames.ManagerOnly)]
 [Route("api/[controller]")]
 public class LogsController : ControllerBase
 {
@@ -15,9 +18,21 @@ public class LogsController : ControllerBase
     {
         _logger = logger;
 
-        var mongoUrl = configuration["Serilog:MongoDbUrl"];
-        var databaseName = configuration["Serilog:MongoDbDatabase"];
+        var mongoUrlValue = configuration["Serilog:MongoDbUrl"];
+        if (string.IsNullOrWhiteSpace(mongoUrlValue))
+        {
+            throw new InvalidOperationException("Missing Serilog:MongoDbUrl configuration.");
+        }
+
+        var mongoUrl = MongoUrl.Create(mongoUrlValue);
+        var databaseName = configuration["Serilog:MongoDbDatabase"] ?? mongoUrl.DatabaseName;
         var collectionName = configuration["Serilog:MongoDbCollection"];
+
+        if (string.IsNullOrWhiteSpace(databaseName) || string.IsNullOrWhiteSpace(collectionName))
+        {
+            throw new InvalidOperationException(
+                "Missing Serilog MongoDB database or collection configuration.");
+        }
 
         var client = new MongoClient(mongoUrl);
         var database = client.GetDatabase(databaseName);

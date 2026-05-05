@@ -1,9 +1,10 @@
 using AarhusSpaceProgram.Api.Models;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace AarhusSpaceProgram.Api.Data;
 
-public class ApplicationDbContext : DbContext
+public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
 {
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
         : base(options)
@@ -22,6 +23,24 @@ public class ApplicationDbContext : DbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
+
+        modelBuilder.Entity<ApplicationUser>()
+            .HasOne(u => u.AstronautProfile)
+            .WithOne(a => a.ApplicationUser)
+            .HasForeignKey<Astronaut>(a => a.ApplicationUserId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        modelBuilder.Entity<ApplicationUser>()
+            .HasOne(u => u.ScientistProfile)
+            .WithOne(s => s.ApplicationUser)
+            .HasForeignKey<Scientist>(s => s.ApplicationUserId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        modelBuilder.Entity<ApplicationUser>()
+            .HasOne(u => u.ManagerProfile)
+            .WithOne(m => m.ApplicationUser)
+            .HasForeignKey<Manager>(m => m.ApplicationUserId)
+            .OnDelete(DeleteBehavior.SetNull);
 
         modelBuilder.Entity<Mission>()
             .HasOne(m => m.Manager)

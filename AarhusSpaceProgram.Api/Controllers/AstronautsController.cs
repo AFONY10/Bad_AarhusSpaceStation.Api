@@ -1,12 +1,15 @@
 using AarhusSpaceProgram.Api.Data;
 using AarhusSpaceProgram.Api.Dtos.Astronauts;
 using AarhusSpaceProgram.Api.Models;
+using AarhusSpaceProgram.Api.Security;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace AarhusSpaceProgram.Api.Controllers;
 
 [ApiController]
+[Authorize(Policy = AuthorizationPolicyNames.ReadAccess)]
 [Route("api/[controller]")]
 public class AstronautsController : ControllerBase
 {
@@ -53,6 +56,7 @@ public class AstronautsController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize(Policy = AuthorizationPolicyNames.ManagerOnly)]
     public async Task<ActionResult<AstronautDto>> CreateAstronaut(CreateAstronautDto dto)
     {
         var astronaut = new Astronaut
@@ -75,6 +79,7 @@ public class AstronautsController : ControllerBase
     }
 
     [HttpPut("{id}")]
+    [Authorize(Policy = AuthorizationPolicyNames.ManagerOnly)]
     public async Task<IActionResult> UpdateAstronaut(int id, UpdateAstronautDto dto)
     {
         var astronaut = await _context.Astronauts.FindAsync(id);
@@ -93,6 +98,7 @@ public class AstronautsController : ControllerBase
     }
 
     [HttpDelete("{id}")]
+    [Authorize(Policy = AuthorizationPolicyNames.ManagerOnly)]
     public async Task<IActionResult> DeleteAstronaut(int id)
     {
         var astronaut = await _context.Astronauts.FindAsync(id);

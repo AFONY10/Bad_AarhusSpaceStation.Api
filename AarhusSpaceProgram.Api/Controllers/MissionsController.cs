@@ -1,10 +1,13 @@
 using AarhusSpaceProgram.Api.Dtos.Missions;
+using AarhusSpaceProgram.Api.Security;
 using AarhusSpaceProgram.Api.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AarhusSpaceProgram.Api.Controllers;
 
 [ApiController]
+[Authorize(Policy = AuthorizationPolicyNames.ReadAccess)]
 [Route("api/[controller]")]
 public class MissionsController : ControllerBase
 {
@@ -16,6 +19,7 @@ public class MissionsController : ControllerBase
     }
 
     [HttpGet]
+    [AllowAnonymous]
     public async Task<ActionResult<IEnumerable<MissionDto>>> GetMissions()
     {
         var missions = await _missionService.GetAllAsync();
@@ -46,6 +50,7 @@ public class MissionsController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize(Policy = AuthorizationPolicyNames.ManagerOnly)]
     public async Task<ActionResult<MissionDto>> CreateMission(CreateMissionDto dto)
     {
         var result = await _missionService.CreateAsync(dto);
@@ -59,6 +64,7 @@ public class MissionsController : ControllerBase
     }
 
     [HttpPut("{id:int}")]
+    [Authorize(Policy = AuthorizationPolicyNames.ManagerOnly)]
     public async Task<IActionResult> UpdateMission(int id, UpdateMissionDto dto)
     {
         var result = await _missionService.UpdateAsync(id, dto);
@@ -75,6 +81,7 @@ public class MissionsController : ControllerBase
     }
 
     [HttpDelete("{id:int}")]
+    [Authorize(Policy = AuthorizationPolicyNames.ManagerOnly)]
     public async Task<IActionResult> DeleteMission(int id)
     {
         var deleted = await _missionService.DeleteAsync(id);
@@ -84,6 +91,7 @@ public class MissionsController : ControllerBase
     }
 
     [HttpPost("{missionId:int}/astronauts/{astronautId:int}")]
+    [Authorize(Policy = AuthorizationPolicyNames.ManagerOnly)]
     public async Task<IActionResult> AssignAstronaut(int missionId, int astronautId)
     {
         var result = await _missionService.AssignAstronautAsync(missionId, astronautId);
@@ -95,6 +103,7 @@ public class MissionsController : ControllerBase
     }
 
     [HttpDelete("{missionId:int}/astronauts/{astronautId:int}")]
+    [Authorize(Policy = AuthorizationPolicyNames.ManagerOnly)]
     public async Task<IActionResult> RemoveAstronaut(int missionId, int astronautId)
     {
         var result = await _missionService.RemoveAstronautAsync(missionId, astronautId);
@@ -106,6 +115,7 @@ public class MissionsController : ControllerBase
     }
 
     [HttpPost("{missionId:int}/scientists/{scientistId:int}")]
+    [Authorize(Policy = AuthorizationPolicyNames.ManagerOnly)]
     public async Task<IActionResult> AssignScientist(int missionId, int scientistId)
     {
         var result = await _missionService.AssignScientistAsync(missionId, scientistId);
@@ -117,6 +127,7 @@ public class MissionsController : ControllerBase
     }
 
     [HttpDelete("{missionId:int}/scientists/{scientistId:int}")]
+    [Authorize(Policy = AuthorizationPolicyNames.ManagerOnly)]
     public async Task<IActionResult> RemoveScientist(int missionId, int scientistId)
     {
         var result = await _missionService.RemoveScientistAsync(missionId, scientistId);

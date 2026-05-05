@@ -1,12 +1,15 @@
 using AarhusSpaceProgram.Api.Data;
 using AarhusSpaceProgram.Api.Dtos.Rockets;
 using AarhusSpaceProgram.Api.Models;
+using AarhusSpaceProgram.Api.Security;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace AarhusSpaceProgram.Api.Controllers;
 
 [ApiController]
+[Authorize(Policy = AuthorizationPolicyNames.ReadAccess)]
 [Route("api/[controller]")]
 public class RocketsController : ControllerBase
 {
@@ -41,6 +44,7 @@ public class RocketsController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize(Policy = AuthorizationPolicyNames.ManagerOnly)]
     public async Task<ActionResult<RocketDto>> CreateRocket(CreateRocketDto dto)
     {
         var r = new Rocket { Model = dto.Model, Weight = dto.Weight, Manufacturer = dto.Manufacturer };
@@ -52,6 +56,7 @@ public class RocketsController : ControllerBase
     }
 
     [HttpPut("{id}")]
+    [Authorize(Policy = AuthorizationPolicyNames.ManagerOnly)]
     public async Task<IActionResult> UpdateRocket(int id, UpdateRocketDto dto)
     {
         var r = await _context.Rockets.FindAsync(id);
@@ -66,6 +71,7 @@ public class RocketsController : ControllerBase
     }
 
     [HttpDelete("{id}")]
+    [Authorize(Policy = AuthorizationPolicyNames.ManagerOnly)]
     public async Task<IActionResult> DeleteRocket(int id)
     {
         var r = await _context.Rockets.FindAsync(id);

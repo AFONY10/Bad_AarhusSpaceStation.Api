@@ -4,6 +4,7 @@ using AarhusSpaceProgram.Api.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AarhusSpaceProgram.Api.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260505112128_AddIdentityAuthentication")]
+    partial class AddIdentityAuthentication
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -95,9 +98,6 @@ namespace AarhusSpaceProgram.Api.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("ApplicationUserId")
-                        .HasColumnType("nvarchar(450)");
-
                     b.Property<string>("FullName")
                         .IsRequired()
                         .HasMaxLength(100)
@@ -107,10 +107,6 @@ namespace AarhusSpaceProgram.Api.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("ApplicationUserId")
-                        .IsUnique()
-                        .HasFilter("[ApplicationUserId] IS NOT NULL");
 
                     b.ToTable("Astronauts");
                 });
@@ -169,9 +165,6 @@ namespace AarhusSpaceProgram.Api.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("ApplicationUserId")
-                        .HasColumnType("nvarchar(450)");
-
                     b.Property<string>("Department")
                         .IsRequired()
                         .HasMaxLength(100)
@@ -183,10 +176,6 @@ namespace AarhusSpaceProgram.Api.Migrations
                         .HasColumnType("nvarchar(100)");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("ApplicationUserId")
-                        .IsUnique()
-                        .HasFilter("[ApplicationUserId] IS NOT NULL");
 
                     b.ToTable("Managers");
                 });
@@ -274,9 +263,6 @@ namespace AarhusSpaceProgram.Api.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("ApplicationUserId")
-                        .HasColumnType("nvarchar(450)");
-
                     b.Property<string>("FieldOfExpertise")
                         .IsRequired()
                         .HasMaxLength(100)
@@ -288,10 +274,6 @@ namespace AarhusSpaceProgram.Api.Migrations
                         .HasColumnType("nvarchar(100)");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("ApplicationUserId")
-                        .IsUnique()
-                        .HasFilter("[ApplicationUserId] IS NOT NULL");
 
                     b.ToTable("Scientists");
                 });
@@ -459,26 +441,6 @@ namespace AarhusSpaceProgram.Api.Migrations
                     b.ToTable("MissionScientists", (string)null);
                 });
 
-            modelBuilder.Entity("AarhusSpaceProgram.Api.Models.Astronaut", b =>
-                {
-                    b.HasOne("AarhusSpaceProgram.Api.Models.ApplicationUser", "ApplicationUser")
-                        .WithOne("AstronautProfile")
-                        .HasForeignKey("AarhusSpaceProgram.Api.Models.Astronaut", "ApplicationUserId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
-                    b.Navigation("ApplicationUser");
-                });
-
-            modelBuilder.Entity("AarhusSpaceProgram.Api.Models.Manager", b =>
-                {
-                    b.HasOne("AarhusSpaceProgram.Api.Models.ApplicationUser", "ApplicationUser")
-                        .WithOne("ManagerProfile")
-                        .HasForeignKey("AarhusSpaceProgram.Api.Models.Manager", "ApplicationUserId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
-                    b.Navigation("ApplicationUser");
-                });
-
             modelBuilder.Entity("AarhusSpaceProgram.Api.Models.Mission", b =>
                 {
                     b.HasOne("AarhusSpaceProgram.Api.Models.Launchpad", "Launchpad")
@@ -508,16 +470,6 @@ namespace AarhusSpaceProgram.Api.Migrations
                     b.Navigation("Rocket");
 
                     b.Navigation("TargetCelestialBody");
-                });
-
-            modelBuilder.Entity("AarhusSpaceProgram.Api.Models.Scientist", b =>
-                {
-                    b.HasOne("AarhusSpaceProgram.Api.Models.ApplicationUser", "ApplicationUser")
-                        .WithOne("ScientistProfile")
-                        .HasForeignKey("AarhusSpaceProgram.Api.Models.Scientist", "ApplicationUserId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
-                    b.Navigation("ApplicationUser");
                 });
 
             modelBuilder.Entity("AstronautMission", b =>
@@ -599,15 +551,6 @@ namespace AarhusSpaceProgram.Api.Migrations
                         .HasForeignKey("ScientistsId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-                });
-
-            modelBuilder.Entity("AarhusSpaceProgram.Api.Models.ApplicationUser", b =>
-                {
-                    b.Navigation("AstronautProfile");
-
-                    b.Navigation("ManagerProfile");
-
-                    b.Navigation("ScientistProfile");
                 });
 
             modelBuilder.Entity("AarhusSpaceProgram.Api.Models.CelestialBody", b =>

@@ -1,12 +1,15 @@
 using AarhusSpaceProgram.Api.Data;
 using AarhusSpaceProgram.Api.Dtos.Scientists;
 using AarhusSpaceProgram.Api.Models;
+using AarhusSpaceProgram.Api.Security;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace AarhusSpaceProgram.Api.Controllers;
 
 [ApiController]
+[Authorize(Policy = AuthorizationPolicyNames.ReadAccess)]
 [Route("api/[controller]")]
 public class ScientistsController : ControllerBase
 {
@@ -44,6 +47,7 @@ public class ScientistsController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize(Policy = AuthorizationPolicyNames.ManagerOnly)]
     public async Task<ActionResult<ScientistDto>> CreateScientist(CreateScientistDto dto)
     {
         var s = new Scientist { FullName = dto.FullName, FieldOfExpertise = dto.FieldOfExpertise };
@@ -55,6 +59,7 @@ public class ScientistsController : ControllerBase
     }
 
     [HttpPut("{id}")]
+    [Authorize(Policy = AuthorizationPolicyNames.ManagerOnly)]
     public async Task<IActionResult> UpdateScientist(int id, UpdateScientistDto dto)
     {
         var s = await _context.Scientists.FindAsync(id);
@@ -69,6 +74,7 @@ public class ScientistsController : ControllerBase
     }
 
     [HttpDelete("{id}")]
+    [Authorize(Policy = AuthorizationPolicyNames.ManagerOnly)]
     public async Task<IActionResult> DeleteScientist(int id)
     {
         var s = await _context.Scientists.FindAsync(id);

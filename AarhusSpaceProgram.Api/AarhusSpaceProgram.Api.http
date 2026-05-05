@@ -1,6 +1,18 @@
-@AarhusSpaceProgram.Api_HostAddress = http://localhost:5185
+@AarhusSpaceProgram.Api_HostAddress = http://localhost:8080
+@ManagerUserName = manager@asp.local
+@ManagerPassword = replace-with-your-manager-password
 
-GET {{AarhusSpaceProgram.Api_HostAddress}}/weatherforecast/
+GET {{AarhusSpaceProgram.Api_HostAddress}}/api/missions
 Accept: application/json
+
+###
+
+POST {{AarhusSpaceProgram.Api_HostAddress}}/api/auth/login
+Content-Type: application/json
+
+{
+  "userName": "{{ManagerUserName}}",
+  "password": "{{ManagerPassword}}"
+}
 
 ###

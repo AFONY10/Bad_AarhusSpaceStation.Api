@@ -1,12 +1,15 @@
 using AarhusSpaceProgram.Api.Data;
 using AarhusSpaceProgram.Api.Dtos.Launchpads;
 using AarhusSpaceProgram.Api.Models;
+using AarhusSpaceProgram.Api.Security;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace AarhusSpaceProgram.Api.Controllers;
 
 [ApiController]
+[Authorize(Policy = AuthorizationPolicyNames.ReadAccess)]
 [Route("api/[controller]")]
 public class LaunchpadsController : ControllerBase
 {
@@ -40,6 +43,7 @@ public class LaunchpadsController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize(Policy = AuthorizationPolicyNames.ManagerOnly)]
     public async Task<ActionResult<LaunchpadDto>> CreateLaunchpad(CreateLaunchpadDto dto)
     {
         var lp = new Launchpad { Location = dto.Location, Description = dto.Description };
@@ -51,6 +55,7 @@ public class LaunchpadsController : ControllerBase
     }
 
     [HttpPut("{id}")]
+    [Authorize(Policy = AuthorizationPolicyNames.ManagerOnly)]
     public async Task<IActionResult> UpdateLaunchpad(int id, UpdateLaunchpadDto dto)
     {
         var lp = await _context.Launchpads.FindAsync(id);
@@ -64,6 +69,7 @@ public class LaunchpadsController : ControllerBase
     }
 
     [HttpDelete("{id}")]
+    [Authorize(Policy = AuthorizationPolicyNames.ManagerOnly)]
     public async Task<IActionResult> DeleteLaunchpad(int id)
     {
         var lp = await _context.Launchpads.FindAsync(id);
