@@ -81,6 +81,12 @@ public class ScientistsController : ControllerBase
         if (s == null)
             return NotFound();
 
+        var hasExperiments = await _context.Experiments.AnyAsync(e => e.ScientistId == id);
+        if (hasExperiments)
+        {
+            return BadRequest(new { message = "Scientist cannot be deleted while responsible for experiments." });
+        }
+
         _context.Scientists.Remove(s);
         await _context.SaveChangesAsync();
 

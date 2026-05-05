@@ -18,6 +18,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<Launchpad> Launchpads => Set<Launchpad>();
     public DbSet<CelestialBody> CelestialBodies => Set<CelestialBody>();
     public DbSet<Mission> Missions => Set<Mission>();
+    public DbSet<Experiment> Experiments => Set<Experiment>();
 
     // OnModelCreating method is used to configure the model and its relationships using the Fluent API. It allows you to specify how entities relate to each other, set up constraints, and configure various aspects of the model.
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -47,6 +48,18 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             .WithMany(mgr => mgr.Missions)
             .HasForeignKey(m => m.ManagerId)
             .OnDelete(DeleteBehavior.SetNull);
+
+        modelBuilder.Entity<Experiment>()
+            .HasOne(e => e.Mission)
+            .WithMany(m => m.Experiments)
+            .HasForeignKey(e => e.MissionId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<Experiment>()
+            .HasOne(e => e.Scientist)
+            .WithMany(s => s.Experiments)
+            .HasForeignKey(e => e.ScientistId)
+            .OnDelete(DeleteBehavior.Restrict);
 
         modelBuilder.Entity<Mission>()
             .HasOne(m => m.Launchpad)

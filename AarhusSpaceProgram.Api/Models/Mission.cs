@@ -28,4 +28,5 @@ public class Mission
 
     public List<Astronaut> Astronauts { get; set; } = new();
     public List<Scientist> Scientists { get; set; } = new();
+    public List<Experiment> Experiments { get; set; } = new();
 }

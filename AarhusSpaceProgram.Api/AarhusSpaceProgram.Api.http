@@ -16,3 +16,22 @@ Content-Type: application/json
 }
 
 ###
+
+GET {{AarhusSpaceProgram.Api_HostAddress}}/api/experiments
+Authorization: Bearer {{token}}
+Accept: application/json
+
+###
+
+POST {{AarhusSpaceProgram.Api_HostAddress}}/api/experiments
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "Radiation Shielding Study",
+  "description": "Measures shielding performance during the mission.",
+  "missionId": 1,
+  "scientistId": 1
+}
+
+###

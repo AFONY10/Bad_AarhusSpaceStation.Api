@@ -18,4 +18,5 @@ public class Scientist
     public ApplicationUser? ApplicationUser { get; set; }
 
     public List<Mission> Missions { get; set; } = new();
+    public List<Experiment> Experiments { get; set; } = new();
 }
