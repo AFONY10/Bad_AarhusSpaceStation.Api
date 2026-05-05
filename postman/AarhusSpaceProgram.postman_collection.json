@@ -1,0 +1,461 @@
+{
+  "info": {
+    "_postman_id": "6af44aca-9463-4b7f-9f21-9fd994d1fd82",
+    "name": "Aarhus Space Program - Assignment 4 Mission CRUD",
+    "description": "Automated Postman tests for Mission Controller CRUD endpoints. Import the matching local Docker environment before running.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{authToken}}",
+        "type": "string"
+      }
+    ]
+  },
+  "event": [
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "pm.test('Response time is under 2000ms', function () {",
+          "    pm.expect(pm.response.responseTime).to.be.below(2000);",
+          "});"
+        ]
+      }
+    }
+  ],
+  "item": [
+    {
+      "name": "00 - Auth",
+      "item": [
+        {
+          "name": "Login as Manager",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userName\": \"{{managerUsername}}\",\n  \"password\": \"{{managerPassword}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            },
+            "description": "Gets a JWT for Manager-only Mission CRUD endpoints."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const json = pm.response.json();",
+                  "",
+                  "pm.test('Response includes JWT token', function () {",
+                  "    pm.expect(json).to.have.property('token').that.is.a('string').and.is.not.empty;",
+                  "});",
+                  "",
+                  "pm.test('Response includes Manager role', function () {",
+                  "    pm.expect(json.roles).to.include('Manager');",
+                  "});",
+                  "",
+                  "pm.environment.set('authToken', json.token);"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "01 - Mission CRUD",
+      "item": [
+        {
+          "name": "GET all missions",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/missions",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "missions"
+              ]
+            },
+            "description": "Public endpoint required by the assignment."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const missions = pm.response.json();",
+                  "",
+                  "pm.test('Response is an array', function () {",
+                  "    pm.expect(missions).to.be.an('array');",
+                  "});",
+                  "",
+                  "pm.test('Mission objects include expected fields when present', function () {",
+                  "    if (missions.length > 0) {",
+                  "        pm.expect(missions[0]).to.include.keys('id', 'name', 'status');",
+                  "    }",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "POST mission",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const stamp = Date.now();",
+                  "pm.environment.set('missionName', `Postman Mission ${stamp}`);",
+                  "pm.environment.set('updatedMissionName', `Postman Mission ${stamp} Updated`);"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 201 Created', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "const created = pm.response.json();",
+                  "",
+                  "pm.test('Created mission has an id and expected name', function () {",
+                  "    pm.expect(created.id).to.be.a('number');",
+                  "    pm.expect(created.name).to.eql(pm.environment.get('missionName'));",
+                  "});",
+                  "",
+                  "pm.test('Created mission starts with Created status', function () {",
+                  "    pm.expect(created.status).to.eql(0);",
+                  "});",
+                  "",
+                  "pm.environment.set('createdMissionId', created.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"{{missionName}}\",\n  \"launchDate\": null,\n  \"managerId\": null,\n  \"rocketId\": null,\n  \"launchpadId\": null,\n  \"targetCelestialBodyId\": null,\n  \"status\": 0\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/missions",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "missions"
+              ]
+            },
+            "description": "Creates a mission with minimal optional relationships to avoid seeded FK/unique-index conflicts."
+          },
+          "response": []
+        },
+        {
+          "name": "GET mission by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/missions/{{createdMissionId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "missions",
+                "{{createdMissionId}}"
+              ]
+            },
+            "description": "Requires JWT auth because only GET /api/missions is public."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const mission = pm.response.json();",
+                  "",
+                  "pm.test('Returned requested mission', function () {",
+                  "    pm.expect(mission.id).to.eql(Number(pm.environment.get('createdMissionId')));",
+                  "});",
+                  "",
+                  "pm.test('Mission has expected details shape', function () {",
+                  "    pm.expect(mission).to.include.keys('id', 'name', 'status', 'astronauts', 'scientists');",
+                  "    pm.expect(mission.astronauts).to.be.an('array');",
+                  "    pm.expect(mission.scientists).to.be.an('array');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "PUT mission",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"{{updatedMissionName}}\",\n  \"launchDate\": null,\n  \"managerId\": null,\n  \"rocketId\": null,\n  \"launchpadId\": null,\n  \"targetCelestialBodyId\": null,\n  \"status\": 1\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/missions/{{createdMissionId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "missions",
+                "{{createdMissionId}}"
+              ]
+            },
+            "description": "Updates the created mission. Status 1 is Budgeted."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 204 No Content', function () {",
+                  "    pm.response.to.have.status(204);",
+                  "});",
+                  "",
+                  "pm.test('Response body is empty', function () {",
+                  "    pm.expect(pm.response.text()).to.eql('');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "GET mission by ID after update",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/missions/{{createdMissionId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "missions",
+                "{{createdMissionId}}"
+              ]
+            },
+            "description": "Verifies that PUT changed the mission."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const mission = pm.response.json();",
+                  "",
+                  "pm.test('Mission name was updated', function () {",
+                  "    pm.expect(mission.name).to.eql(pm.environment.get('updatedMissionName'));",
+                  "});",
+                  "",
+                  "pm.test('Mission status was updated to Budgeted', function () {",
+                  "    pm.expect(mission.status).to.eql(1);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "DELETE mission",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/missions/{{createdMissionId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "missions",
+                "{{createdMissionId}}"
+              ]
+            },
+            "description": "Deletes the mission created by this collection run."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 204 No Content', function () {",
+                  "    pm.response.to.have.status(204);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "GET deleted mission returns 404",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/missions/{{createdMissionId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "missions",
+                "{{createdMissionId}}"
+              ]
+            },
+            "description": "Cleanup verification."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 404 Not Found', function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "02 - Authorization Checks",
+      "item": [
+        {
+          "name": "POST mission without token returns 401",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Unauthorized Postman Mission\",\n  \"launchDate\": null,\n  \"managerId\": null,\n  \"rocketId\": null,\n  \"launchpadId\": null,\n  \"targetCelestialBodyId\": null,\n  \"status\": 0\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/missions",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "missions"
+              ]
+            },
+            "description": "Confirms authentication is required for creating missions."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 401 Unauthorized', function () {",
+                  "    pm.response.to.have.status(401);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
