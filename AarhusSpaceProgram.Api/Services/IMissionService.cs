@@ -1,10 +1,13 @@
 using AarhusSpaceProgram.Api.Dtos.Missions;
+using AarhusSpaceProgram.Api.Models;
+
 namespace AarhusSpaceProgram.Api.Services;
 
 public interface IMissionService
 {
-    Task<IEnumerable<MissionDto>> GetAllAsync();
+    Task<IEnumerable<MissionDto>> GetAllAsync(MissionStatus? status = null);
     Task<MissionDetailsDto?> GetByIdAsync(int id);
+    Task<bool> ExistsAsync(int id);
     Task<IEnumerable<MissionOverviewDto>> GetOverviewAsync();
     Task<IEnumerable<MissionDto>> GetByTargetBodyAsync(string targetBodyName);
     Task<(bool Success, string? Error, MissionDto? Mission)> CreateAsync(CreateMissionDto dto);

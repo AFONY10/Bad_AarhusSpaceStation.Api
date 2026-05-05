@@ -3,6 +3,7 @@
 The Docker setup runs the current API plus its two infrastructure dependencies:
 
 - `api`: the ASP.NET Core Web API
+- `mission-log-worker`: background service that generates mission logs through the API
 - `sqlserver`: SQL Server for EF Core data
 - `mongodb`: MongoDB for request logging today, and mission logs in Assignment 4
 
@@ -24,6 +25,8 @@ Useful endpoints:
 
 - `GET /health`
 - `POST /api/auth/login`
+- `GET /api/missions?status=Active`
+- `GET /api/missions/{id}/logs`
 - `GET /openapi/v1.json`
 - Scalar API reference at `/scalar/v1`
 
@@ -53,6 +56,10 @@ For Docker, `docker-compose.yml` injects configuration through environment varia
 - `SeedUsers__Manager__UserName`
 - `SeedUsers__Manager__Password`
 - `SeedUsers__Manager__StaffFullName`
+- `MissionLogWorker__ApiBaseUrl`
+- `MissionLogWorker__PollIntervalSeconds`
+- `MissionLogWorker__UserName`
+- `MissionLogWorker__Password`
 - `Serilog__MongoDbUrl`
 - `Serilog__MongoDbCollection`
 - `MongoDb__ConnectionString`

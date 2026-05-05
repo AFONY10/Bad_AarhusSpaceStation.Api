@@ -169,6 +169,7 @@ builder.Services.AddAuthorization(options =>
 });
 
 builder.Services.AddScoped<IMissionService, MissionService>();
+builder.Services.AddScoped<IMissionLogRepository, MongoMissionLogRepository>();
 builder.Services.AddScoped<IJwtTokenService, JwtTokenService>();
 
 var app = builder.Build();

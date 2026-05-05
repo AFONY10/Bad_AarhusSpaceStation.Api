@@ -1,4 +1,6 @@
 using AarhusSpaceProgram.Api.Dtos.Missions;
+using AarhusSpaceProgram.Api.Dtos.MissionLogs;
+using AarhusSpaceProgram.Api.Models;
 using AarhusSpaceProgram.Api.Security;
 using AarhusSpaceProgram.Api.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -11,18 +13,20 @@ namespace AarhusSpaceProgram.Api.Controllers;
 [Route("api/[controller]")]
 public class MissionsController : ControllerBase
 {
+    private readonly IMissionLogRepository _missionLogRepository;
     private readonly IMissionService _missionService;
 
-    public MissionsController(IMissionService missionService)
+    public MissionsController(IMissionService missionService, IMissionLogRepository missionLogRepository)
     {
         _missionService = missionService;
+        _missionLogRepository = missionLogRepository;
     }
 
     [HttpGet]
     [AllowAnonymous]
-    public async Task<ActionResult<IEnumerable<MissionDto>>> GetMissions()
+    public async Task<ActionResult<IEnumerable<MissionDto>>> GetMissions([FromQuery] MissionStatus? status = null)
     {
-        var missions = await _missionService.GetAllAsync();
+        var missions = await _missionService.GetAllAsync(status);
         return Ok(missions);
     }
 
@@ -49,6 +53,39 @@ public class MissionsController : ControllerBase
         return Ok(missions);
     }
 
+    [HttpGet("{id:int}/logs")]
+    public async Task<ActionResult<IEnumerable<MissionLogDto>>> GetMissionLogs(int id)
+    {
+        if (!await _missionService.ExistsAsync(id))
+        {
+            return NotFound();
+        }
+
+        var logs = await _missionLogRepository.GetByMissionIdAsync(id);
+        return Ok(logs.Select(MapMissionLogDto));
+    }
+
+    [HttpPost("{id:int}/logs")]
+    [Authorize(Policy = AuthorizationPolicyNames.ManagerOnly)]
+    public async Task<ActionResult<MissionLogDto>> CreateMissionLog(int id, CreateMissionLogDto dto)
+    {
+        if (!await _missionService.ExistsAsync(id))
+        {
+            return NotFound();
+        }
+
+        var log = new MissionLog
+        {
+            MissionId = id,
+            Message = dto.Message,
+            Timestamp = dto.Timestamp ?? DateTime.UtcNow
+        };
+
+        await _missionLogRepository.CreateAsync(log);
+
+        return CreatedAtAction(nameof(GetMissionLogs), new { id }, MapMissionLogDto(log));
+    }
+
     [HttpPost]
     [Authorize(Policy = AuthorizationPolicyNames.ManagerOnly)]
     public async Task<ActionResult<MissionDto>> CreateMission(CreateMissionDto dto)
@@ -61,6 +98,17 @@ public class MissionsController : ControllerBase
         }
 
         return CreatedAtAction(nameof(GetMission), new { id = result.Mission!.Id }, result.Mission);
+    }
+
+    private static MissionLogDto MapMissionLogDto(MissionLog log)
+    {
+        return new MissionLogDto
+        {
+            Id = log.Id,
+            MissionId = log.MissionId,
+            Message = log.Message,
+            Timestamp = log.Timestamp
+        };
     }
 
     [HttpPut("{id:int}")]

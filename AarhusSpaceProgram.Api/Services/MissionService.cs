@@ -14,13 +14,21 @@ public class MissionService : IMissionService
         _context = context;
     }
 
-    public async Task<IEnumerable<MissionDto>> GetAllAsync()
+    public async Task<IEnumerable<MissionDto>> GetAllAsync(MissionStatus? status = null)
     {
-        return await _context.Missions
+        var query = _context.Missions
             .Include(m => m.Manager)
             .Include(m => m.Rocket)
             .Include(m => m.Launchpad)
             .Include(m => m.TargetCelestialBody)
+            .AsQueryable();
+
+        if (status.HasValue)
+        {
+            query = query.Where(m => m.Status == status.Value);
+        }
+
+        return await query
             .Select(m => new MissionDto
             {
                 Id = m.Id,
@@ -63,6 +71,11 @@ public class MissionService : IMissionService
                 Scientists = m.Scientists.Select(s => s.FullName).ToList()
             })
             .FirstOrDefaultAsync();
+    }
+
+    public async Task<bool> ExistsAsync(int id)
+    {
+        return await _context.Missions.AnyAsync(m => m.Id == id);
     }
 
     public async Task<IEnumerable<MissionOverviewDto>> GetOverviewAsync()

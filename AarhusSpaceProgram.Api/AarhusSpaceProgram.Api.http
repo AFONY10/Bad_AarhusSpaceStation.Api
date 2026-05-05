@@ -35,3 +35,25 @@ Content-Type: application/json
 }
 
 ###
+
+GET {{AarhusSpaceProgram.Api_HostAddress}}/api/missions?status=Active
+Accept: application/json
+
+###
+
+GET {{AarhusSpaceProgram.Api_HostAddress}}/api/missions/1/logs
+Authorization: Bearer {{token}}
+Accept: application/json
+
+###
+
+POST {{AarhusSpaceProgram.Api_HostAddress}}/api/missions/1/logs
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "message": "Telemetry check completed",
+  "timestamp": "2026-05-05T12:00:00Z"
+}
+
+###
